@@ -184,7 +184,7 @@ git checkout upstream/week-01-result
 Create your own Week 2 branch:
 
 ```bash
-git push origin $(git rev-parse upstream/week-01):refs/heads/week-02
+git push origin $(git rev-parse upstream/week-02):refs/heads/week-02
 git checkout -b week-02 origin/week-02
 ```
 
