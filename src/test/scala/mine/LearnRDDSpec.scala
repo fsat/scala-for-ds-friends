@@ -1,24 +1,23 @@
 package mine
 
-import com.holdenkarau.spark.testing.SharedSparkContext
-import org.apache.spark.SparkContext
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.SparkSession
 import org.scalatest.{ FeatureSpec, GivenWhenThen, Matchers }
 
-class LearnRDDSpec extends FeatureSpec with GivenWhenThen with Matchers with SharedSparkContext {
+class LearnRDDSpec extends FeatureSpec with GivenWhenThen with Matchers with DataFrameSuiteBase {
+
   val FixturePath = this.getClass.getResource("/fixtures/simple/person").getFile
 
   /*
-  We are using the `implicit` keyword to tell the Scala compiler to automatically pass the result of this method
-  (i.e. the `SparkContext`) into a method which requests for `SparkContext` implicitly.
-
-
+    We are using the `implicit` keyword to tell the Scala compiler to automatically pass the result of this method
+    (i.e. the `SparkSession`) into a method which requests for `SparkSession` implicitly.
    */
-  implicit def sparkContext(): SparkContext = sc
+  implicit def sparkSession: SparkSession = spark
 
   feature("Spark RDD") {
     scenario("Read RDD[String]") {
       When("we ask Spark to read a directory containing one or more text file")
-      val result = sparkContext().textFile(FixturePath)
+      val result = spark.sparkContext.textFile(FixturePath)
 
       Then("the resulting RDD should contain all the text content of the file")
       val expectedResult = Seq(
@@ -34,7 +33,7 @@ class LearnRDDSpec extends FeatureSpec with GivenWhenThen with Matchers with Sha
 
     scenario("RDD transformation using map method") {
       When("we ask Spark to read a directory containing one or more text file")
-      val rdd = sparkContext().textFile(FixturePath)
+      val rdd = spark.sparkContext.textFile(FixturePath)
 
       And("we use the map method to transform the String to Person instance")
       val result = rdd.map(text => Person.fromString(text))
@@ -135,7 +134,11 @@ class LearnRDDSpec extends FeatureSpec with GivenWhenThen with Matchers with Sha
 
       Then("the result should match the expected result")
       val expectedResult = Map(
-        "A" -> Seq(Person("Aaron", 12)))
+        "A" -> Seq(Person("Aaron", 12), Person("Anna", 63)),
+        "D" -> Seq(Person("Daniel", 45)),
+        "J" -> Seq(Person("Janet", 3)),
+        "N" -> Seq(Person("Nicole", 29)),
+        "T" -> Seq(Person("Thomas", 10), Person("Tim", 27)))
       result shouldBe expectedResult
     }
 
