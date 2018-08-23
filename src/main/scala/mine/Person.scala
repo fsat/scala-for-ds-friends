@@ -19,21 +19,24 @@ object Person {
    *
    * The Scala compiler will perform match based on the type which is [[SparkSession]] in this case.
    */
-  def list(path: String)(implicit sparkSession: SparkSession): RDD[Person] = ???
+  def list(path: String)(implicit sparkSession: SparkSession): RDD[Person] =
+    SparkHelper.readText(path).map(text => fromString(text))
 
   /**
    * Implement this method as such:
    * 1. Use the [[list()]] method to obtain the [[RDD]] of [[Person]].
    * 2. Use the [[RDD.filter()]] method to filter for the [[Person]] matching the name.
    */
-  def findByName(path: String, name: String)(implicit sparkSession: SparkSession): RDD[Person] = ???
+  def findByName(path: String, name: String)(implicit sparkSession: SparkSession): RDD[Person] =
+    list(path).filter(person => person.name == name)
 
   /**
    * Implement this method as such:
    * 1. Use the [[list()]] method to obtain the [[RDD]] of [[Person]].
    * 2. Use the [[RDD.filter()]] method to filter for the [[Person]] older than specified `age`.
    */
-  def findOlderThan(path: String, age: Int)(implicit sparkSession: SparkSession): RDD[Person] = ???
+  def findOlderThan(path: String, age: Int)(implicit sparkSession: SparkSession): RDD[Person] =
+    list(path).filter(person => person.age > age)
 
   /**
    * Implement this method as such:
@@ -41,7 +44,8 @@ object Person {
    * 2. Use the [[RDD.sortBy()]] method. [[RDD.sortBy()]] takes a function which return a value which will be used to
    *    perform the sort.
    */
-  def sortByName(path: String)(implicit sparkSession: SparkSession): RDD[Person] = ???
+  def sortByName(path: String)(implicit sparkSession: SparkSession): RDD[Person] =
+    list(path).sortBy(person => person.name)
 
   /**
    * This should be similar to [[sortByName()]], except using [[Person.age]] instead.
@@ -49,7 +53,8 @@ object Person {
    * Note that [[RDD.sortBy()]] takes a second optional [[Boolean]] argument which controls whether the sort is
    * ascending or descending.
    */
-  def sortByAge(path: String)(implicit sparkSession: SparkSession): RDD[Person] = ???
+  def sortByAge(path: String, oldestFirst: Boolean)(implicit sparkSession: SparkSession): RDD[Person] =
+    list(path).sortBy(person => person.age, ascending = !oldestFirst)
 
   /**
    * Implement this method as such:
@@ -60,7 +65,8 @@ object Person {
    * - You can use [[RDD.take()]] to take a number of elements you wish. Scala's list has `.head` method returns the
    *   head of the list.
    */
-  def oldest(path: String)(implicit sparkSession: SparkSession): Person = ???
+  def oldest(path: String)(implicit sparkSession: SparkSession): Person =
+    sortByAge(path, oldestFirst = true).first()
 
   /**
    * Implement this method as such:
@@ -80,7 +86,10 @@ object Person {
    * [[String]] in Scala is treated like a list of characters. This means the `.head` method of String will return the
    * first element, which is the first letter.
    */
-  def groupByFirstLetterOfTheName(path: String)(implicit sparkSession: SparkSession): Map[String, Iterable[Person]] = ???
+  def groupByFirstLetterOfTheName(path: String)(implicit sparkSession: SparkSession): Map[String, Iterable[Person]] =
+    list(path)
+      .groupBy(person => person.name.head.toString)
+      .collectAsMap()
 
   def fromString(input: String): Person = {
     val parts = input.split(" ")
